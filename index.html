@@ -3,332 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Integrales por Partes - Prepa</title>
+    <title>Gauss-Jordan Unificado</title>
     <style>
-        /* Fondo Animado con gradiente rosado en movimiento */
+        * { box-sizing: border-box; }
+
+        /* Fondo Animado con gradiente en movimiento (Tonos Azules) */
         @keyframes fondoAnimado {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
 
-        body {
+        body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(-45deg, #ff9a9e, #fecfef, #feada6, #f3a6c8);
+            margin: 0; 
+            padding: 12px; 
+            background: linear-gradient(-45deg, #001f3f, #0074d9, #7fdbff, #001122);
             background-size: 400% 400%;
             animation: fondoAnimado 12s ease infinite;
-            color: #2c3e50;
-            margin: 0;
-            padding: 0;
+            font-size: 14px;
+            min-height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
         }
 
-        .container {
-            text-align: center;
-            background-color: rgba(255, 255, 255, 0.9);
+        .container { 
+            background-color: rgba(214, 234, 248, 0.9); /* Azul traslúcido suave */
             backdrop-filter: blur(10px);
-            padding: 40px;
-            border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-            max-width: 600px;
-            width: 90%;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-sizing: border-box;
+            padding: 20px; 
+            border-radius: 15px; 
+            max-width: 100%;
+            width: 480px;
+            border: 3px solid #000000;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
 
-        /* Botones Morados Estilizados */
-        button {
-            background-color: #8a2be2;
-            color: #ffffff;
-            border: none;
-            padding: 14px 28px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px;
-            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
-        }
-
-        button:hover {
-            background-color: #7b1fa2;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4);
-        }
-
-        button:active {
-            transform: translateY(1px);
-            box-shadow: 0 2px 10px rgba(138, 43, 226, 0.3);
-        }
-
-        /* Diseño en lista vertical */
-        .button-group {
-            display: flex;
-            flex-direction: column; 
-            align-items: center;
-            gap: 12px;
-            margin-top: 25px;
-        }
-
-        .button-group button, #inicio button {
-            margin: 0;
-            width: 100%;
-            max-width: 340px;
-            padding: 16px 20px; 
-        }
-
-        /* Botón volver con tono morado secundario */
-        #btn-volver {
-            background-color: #6a1b9a;
-        }
-        #btn-volver:hover {
-            background-color: #4a148c;
-        }
-
-        /* Pantallas */
-        .screen {
-            display: none;
-        }
-
-        .active {
-            display: block;
-        }
-
-        /* Pantalla de Inicio */
-        #inicio h1 {
-            font-size: 2.8rem;
-            margin-bottom: 30px;
-            color: #4a148c;
+        h1 { 
+            text-align: center; 
+            color: #000000; 
+            font-size: 1.6rem; 
+            margin: 0 0 15px 0;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 800;
+            letter-spacing: 1px;
         }
 
-        #inicio p {
-            font-size: 1.1rem;
-            color: #6a1b9a;
-            margin-bottom: 25px;
+        /* Menu superior para cambiar de modo */
+        .menu-cambio {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            width: 480px;
+            max-width: 100%;
         }
 
-        /* Pantalla de Calculadora */
-        h2 {
-            color: #4a148c;
-            margin-bottom: 20px;
-        }
-
-        select, input {
-            padding: 12px;
-            font-size: 1.1rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            text-align: center;
+        .menu-cambio button {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
             font-weight: bold;
+            cursor: pointer;
+            border: 3px solid #000000;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 4px 0 #000000;
+            transition: all 0.2s ease;
+        }
+
+        .menu-cambio button:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000000;
+        }
+
+        .menu-cambio button.activo {
+            background: #0074d9;
+            color: #ffffff;
+        }
+
+        .menu-cambio button.activo:hover {
+            background: #0056a3;
+        }
+
+        .fila { 
+            display: flex; 
+            gap: 5px; 
+            margin-bottom: 8px; 
+            align-items: center;
+        }
+
+        .fila span { 
+            min-width: 55px; 
+            font-size: 13px; 
+            color: #000000;
+            font-weight: bold;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 8px 4px; 
+            font-size: 14px; 
+            text-align: center; 
+            border: 2px solid #000000; 
+            border-radius: 6px; 
             background-color: #ffffff;
-            color: #333;
-            transition: border-color 0.3s;
+            color: #000000;
+            font-weight: bold;
         }
 
-        select:focus, input:focus {
-            outline: none;
-            border-color: #8a2be2;
+        input:focus { 
+            border-color: #2ecc71; 
+            outline: none; 
         }
 
-        .opcion-bloque {
-            background-color: rgba(138, 43, 226, 0.05);
-            padding: 20px;
-            border-radius: 14px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(138, 43, 226, 0.15);
+        /* Botones Principales (Verde Claro) */
+        button.action-btn { 
+            background: #2ecc71; 
+            color: #000000; 
+            border: 3px solid #000000; 
+            padding: 12px; 
+            font-size: 1.1rem; 
+            font-weight: bold;
+            border-radius: 10px; 
+            cursor: pointer; 
+            width: 100%; 
+            margin: 6px 0; 
+            box-shadow: 0 4px 0 #000000;
+            transition: all 0.2s ease;
         }
 
-        /* Contenedor de Resultados y Procedimientos */
-        #resultado-box {
-            margin-top: 25px;
-            background-color: #ffffff;
-            padding: 25px;
-            border-radius: 16px;
-            border: 1px solid #e0e0e0;
-            text-align: left;
-            display: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        button.action-btn:hover { 
+            background: #58d68d; 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #000000;
         }
 
-        #resultado-box h3 {
-            margin-top: 0;
-            color: #4a148c;
-            border-bottom: 2px dashed #f0f0f0;
-            padding-bottom: 12px;
+        button.action-btn:active { 
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #000000;
         }
 
-        .paso {
-            margin-bottom: 14px;
-            font-size: 1.05rem;
-            line-height: 1.6;
-            color: #4f5d75;
+        /* Botón secundario (Verde más oscuro) */
+        button.btn-sec { 
+            background: #27ae60; 
+        }
+
+        .paso { 
+            background: #ffffff; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            border: 2px solid #000000;
+            border-left: 6px solid #2ecc71; 
+            font-size: 12px;
+            color: #000000;
+        }
+
+        .matriz { 
+            font-family: monospace; 
+            font-size: 11px; 
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.4;
+            background: #f4f6f7;
+            padding: 6px;
+            border-radius: 4px;
+            margin-top: 4px;
+            color: #000000;
+        }
+
+        .resultado { 
+            background: #2ecc71; 
+            color: #000000; 
+            padding: 12px; 
+            border: 3px solid #000000;
+            border-radius: 10px; 
+            text-align: center; 
+            font-weight: bold;
+            margin-top: 12px;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 0 #000000;
+        }
+
+        .error { 
+            background: #e74c3c; 
+            color: white; 
+            padding: 12px; 
+            border: 3px solid #000000;
+            border-radius: 10px; 
+            margin-top: 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Clases para ocultar la columna Z y la Fila 3 en modo 2x2 */
+        .modo-2x2 .col-z, .modo-2x2 .fila-3 {
+            display: none !important;
         }
     </style>
 </head>
-<body>
+<body id="cuerpo" class="modo-3x3">
+
+    <div class="menu-cambio">
+        <button id="selector-3x3" class="activo" onclick="cambiarSistema(3)">Elegir 3x3</button>
+        <button id="selector-2x2" onclick="cambiarSistema(2)">Elegir 2x2</button>
+    </div>
 
     <div class="container">
+        <h1 id="titulo-dinamico">Gauss-Jordan 3x3</h1>
         
-        <div id="inicio" class="screen active">
-            <h1>Integral por Partes</h1>
-            <p>Aprende el método "Una Vaca Sin Cola Vestida De Uniforme" paso a paso</p>
-            <div class="button-group">
-                <button id="btn-comenzar">Calcular ya</button>
-            </div>
+        <div class="fila">
+            <span>Ec. 1:</span>
+            <input type="text" id="a11" placeholder="x" value="3"> 
+            <input type="text" id="a12" placeholder="y" value="2"> 
+            <input type="text" id="a13" class="col-z" placeholder="z" value="1"> 
+            <input type="text" id="b1" placeholder="=" value="6">
         </div>
-
-        <div id="calculadora" class="screen">
-            <h2>Integración por Partes</h2>
-            <p>Selecciona el modelo de función clásica para resolver:</p>
-            
-            <div class="opcion-bloque">
-                <label for="tipo-partes"><b>Modelo: </b></label>
-                <select id="tipo-partes">
-                    <option value="exponencial">∫ x · e^(ax) dx</option>
-                    <option value="coseno">∫ x · cos(ax) dx</option>
-                    <option value="seno">∫ x · sin(ax) dx</option>
-                </select>
-            </div>
-
-            <div id="inputs-dinamicos" class="opcion-bloque">
-                </div>
-
-            <div class="button-group">
-                <button id="btn-calcular">Calcular por Partes</button>
-                <button id="btn-volver">Volver</button>
-            </div>
-
-            <div id="resultado-box">
-                <h3>Procedimiento estructurado (∫ u dv):</h3>
-                <div id="pasos-partes"></div>
-            </div>
+        <div class="fila">
+            <span>Ec. 2:</span>
+            <input type="text" id="a21" placeholder="x" value="4"> 
+            <input type="text" id="a22" placeholder="y" value="1"> 
+            <input type="text" id="a23" class="col-z" placeholder="z" value="3"> 
+            <input type="text" id="b2" placeholder="=" value="8">
         </div>
-
+        <div class="fila fila-3">
+            <span>Ec. 3:</span>
+            <input type="text" id="a31" placeholder="x" value="1"> 
+            <input type="text" id="a32" placeholder="y" value="2"> 
+            <input type="text" id="a33" class="col-z" placeholder="z" value="-1"> 
+            <input type="text" id="b3" placeholder="=" value="2">
+        </div>
+        
+        <button class="action-btn" onclick="resolver()">Calcular</button>
+        <button class="action-btn btn-sec" onclick="limpiar()">Limpiar</button>
+        <div id="proceso"></div>
+        <div id="resultado"></div>
     </div>
 
     <script>
-        // Navegación
-        const pantallaInicio = document.getElementById('inicio');
-        const pantallaCalculadora = document.getElementById('calculadora');
-        const btnComenzar = document.getElementById('btn-comenzar');
-        const btnVolver = document.getElementById('btn-volver');
-        const btnCalcular = document.getElementById('btn-calcular');
-        const tipoPartes = document.getElementById('tipo-partes');
-        const inputsDinamicos = document.getElementById('inputs-dinamicos');
-        const resultadoBox = document.getElementById('resultado-box');
-        const pasosDiv = document.getElementById('pasos-partes');
+        let sistemaActual = 3;
 
-        btnComenzar.addEventListener('click', () => {
-            pantallaInicio.classList.remove('active');
-            pantallaCalculadora.classList.add('active');
-            renderInputs();
-        });
-
-        btnVolver.addEventListener('click', () => {
-            pantallaCalculadora.classList.remove('active');
-            pantallaInicio.classList.add('active');
-            resultadoBox.style.display = 'none';
-        });
-
-        function renderInputs() {
-            resultadoBox.style.display = 'none';
-            const opcion = tipoPartes.value;
-            
-            if (opcion === 'exponencial') {
-                inputsDinamicos.innerHTML = `
-                    <span>∫ x · e^(</span>
-                    <input type="number" id="val-a" value="2" style="width: 60px;" placeholder="a">
-                    <span>x) dx</span>
-                `;
-            } else if (opcion === 'coseno' || opcion === 'seno') {
-                inputsDinamicos.innerHTML = `
-                    <span>∫ x · ${opcion}(</span>
-                    <input type="number" id="val-a" value="3" style="width: 60px;" placeholder="a">
-                    <span>x) dx</span>
-                `;
+        class Frac {
+            constructor(n, d = 1) {
+                if(typeof n === 'string') {
+                    n = n.trim();
+                    if(n.includes('/')) {
+                        let p = n.split('/');
+                        n = parseFloat(p[0]);
+                        d = parseFloat(p[1]);
+                    } else {
+                        n = parseFloat(n);
+                    }
+                }
+                if(d === 0) throw new Error("División por cero");
+                if(isNaN(n) || isNaN(d)) { n = 0; d = 1; }
+                
+                let g = this.mcd(Math.abs(n), Math.abs(d));
+                this.n = Math.round(n / g) * (d < 0? -1 : 1);
+                this.d = Math.round(Math.abs(d) / g);
             }
+            
+            mcd(a, b) { return b? this.mcd(b, a % b) : a; }
+            
+            toString() {
+                if(this.d === 1) return this.n.toString();
+                if(this.n === 0) return "0";
+                return this.n + "/" + this.d;
+            }
+            
+            suma(o) { return new Frac(this.n * o.d + o.n * this.d, this.d * o.d); }
+            resta(o) { return new Frac(this.n * o.d - o.n * this.d, this.d * o.d); }
+            mult(o) { return new Frac(this.n * o.n, this.d * o.d); }
+            div(o) { return new Frac(this.n * o.d, this.d * o.n); }
+            esCero() { return this.n === 0; }
+            val() { return this.n / this.d; }
         }
 
-        tipoPartes.addEventListener('change', renderInputs);
+        function cambiarSistema(tipo) {
+            sistemaActual = tipo;
+            const cuerpo = document.getElementById('cuerpo');
+            const titulo = document.getElementById('titulo-dinamico');
+            const btn3 = document.getElementById('selector-3x3');
+            const btn2 = document.getElementById('selector-2x2');
 
-        // Motor de cálculo para Integración por Partes
-        btnCalcular.addEventListener('click', () => {
-            const opcion = tipoPartes.value;
-            let htmlPasos = "";
-            let resultadoFinal = "";
+            limpiar();
 
-            const a = parseFloat(document.getElementById('val-a').value || 1);
+            if (tipo === 3) {
+                cuerpo.className = "modo-3x3";
+                titulo.textContent = "Gauss-Jordan 3x3";
+                btn3.classList.add('activo');
+                btn2.classList.remove('activo');
+                
+                // Valores iniciales para 3x3
+                document.getElementById('a11').value = "3"; document.getElementById('a12').value = "2"; document.getElementById('a13').value = "1"; document.getElementById('b1').value = "6";
+                document.getElementById('a21').value = "4"; document.getElementById('a22').value = "1"; document.getElementById('a23').value = "3"; document.getElementById('b2').value = "8";
+                document.getElementById('a31').value = "1"; document.getElementById('a32').value = "2"; document.getElementById('a33').value = "-1"; document.getElementById('b3').value = "2";
+            } else {
+                cuerpo.className = "modo-2x2";
+                titulo.textContent = "Gauss-Jordan 2x2";
+                btn2.classList.add('activo');
+                btn3.classList.remove('activo');
 
-            // Pasos estándar de la definición ILATE para estos casos
-            htmlPasos += `<div class="paso"><b>Fórmula Base:</b> ∫ u dv = u·v - ∫ v du</div>`;
-            htmlPasos += `<div class="paso"><b>Paso 1 (Identificar componentes):</b><br>
-                          Usando la regla ILATE, elegimos la algebraica como 'u':<br>
-                          • <b>u = x</b>  &rarr;  <b>du = dx</b></div>`;
-
-            if (opcion === 'exponencial') {
-                const fraccion = (1 / a).toFixed(2);
-                const fraccionCuadrado = (1 / (a * a)).toFixed(2);
-
-                htmlPasos += `
-                    <div class="paso"><b>Paso 2 (Encontrar 'v' integrando dv):</b><br>
-                    dv = e<sup>${a}x</sup> dx &rarr; <b>v = (1/${a})e<sup>${a}x</sup></b></div>
-                    <div class="paso"><b>Paso 3 (Aplicar la vaca sin cola u·v - ∫ v du):</b><br>
-                    = x · [ (1/${a})e<sup>${a}x</sup> ] - ∫ (1/${a})e<sup>${a}x</sup> dx</div>
-                    <div class="paso"><b>Paso 4 (Resolver la última integral):</b><br>
-                    La integral de (1/${a})e<sup>${a}x</sup> vuelve a dividir entre ${a}:<br>
-                    = (x/${a})e<sup>${a}x</sup> - (1/${a * a})e<sup>${a}x</sup> + C</div>
-                `;
-                resultadoFinal = `(${fraccion}x - ${fraccionCuadrado})e<sup>${a}x</sup> + C`;
-
-            } else if (opcion === 'coseno') {
-                const fraccion = (1 / a).toFixed(2);
-                const fraccionCuadrado = (1 / (a * a)).toFixed(2);
-
-                htmlPasos += `
-                    <div class="paso"><b>Paso 2 (Encontrar 'v' integrando dv):</b><br>
-                    dv = cos(${a}x) dx &rarr; <b>v = (1/${a})sin(${a}x)</b></div>
-                    <div class="paso"><b>Paso 3 (Aplicar la fórmula u·v - ∫ v du):</b><br>
-                    = x · [ (1/${a})sin(${a}x) ] - ∫ (1/${a})sin(${a}x) dx</div>
-                    <div class="paso"><b>Paso 4 (Resolver la última integral):</b><br>
-                    La integral de sin(${a}x) es -cos(${a}x)/${a}. Por lo tanto, el signo cambia a positivo (- × - = +):<br>
-                    = (x/${a})sin(${a}x) + (1/${a * a})cos(${a}x) + C</div>
-                `;
-                resultadoFinal = `${fraccion}x · sin(${a}x) + ${fraccionCuadrado}cos(${a}x) + C`;
-
-            } else if (opcion === 'seno') {
-                const fraccion = (1 / a).toFixed(2);
-                const fraccionCuadrado = (1 / (a * a)).toFixed(2);
-
-                htmlPasos += `
-                    <div class="paso"><b>Paso 2 (Encontrar 'v' integrando dv):</b><br>
-                    dv = sin(${a}x) dx &rarr; <b>v = -(1/${a})cos(${a}x)</b></div>
-                    <div class="paso"><b>Paso 3 (Aplicar la fórmula u·v - ∫ v du):</b><br>
-                    = x · [ -(1/${a})cos(${a}x) ] - ∫ [ -(1/${a})cos(${a}x) ] dx<br>
-                    = -(x/${a})cos(${a}x) + (1/${a}) ∫ cos(${a}x) dx</div>
-                    <div class="paso"><b>Paso 4 (Resolver la última integral):</b><br>
-                    La integral de cos(${a}x) es sin(${a}x)/${a}:<br>
-                    = -(x/${a})cos(${a}x) + (1/${a * a})sin(${a}x) + C</div>
-                `;
-                resultadoFinal = `-${fraccion}x · cos(${a}x) + ${fraccionCuadrado}sin(${a}x) + C`;
+                // Valores iniciales para 2x2
+                document.getElementById('a11').value = "2"; document.getElementById('a12').value = "3"; document.getElementById('b1').value = "12";
+                document.getElementById('a21').value = "1"; document.getElementById('a22').value = "-1"; document.getElementById('b2').value = "1";
             }
+            resolver();
+        }
 
-            // Inyección del resultado final estilizado
-            htmlPasos += `
-                <div class="paso" style="font-size: 1.3rem; margin-top: 15px; border-top: 2px dashed #f0f0f0; padding-top: 15px;">
-                    <b>Resultado F(x) = </b> <span style="color: #8a2be2; font-weight: bold;">${resultadoFinal}</span>
-                </div>
-            `;
+        function printM(m, t) {
+            let h = `<div class="paso"><b>${t}</b><div class="matriz">`;
+            for(let i = 0; i < sistemaActual; i++) {
+                if(sistemaActual === 3) {
+                    h += `[${m[i][0].toString().padStart(6)} ${m[i][1].toString().padStart(6)} ${m[i][2].toString().padStart(6)} |${m[i][3].toString().padStart(6)}]\n`;
+                } else {
+                    h += `[${m[i][0].toString().padStart(6)} ${m[i][1].toString().padStart(6)} |${m[i][2].toString().padStart(6)}]\n`;
+                }
+            }
+            return h + `</div></div>`;
+        }
 
-            pasosDiv.innerHTML = htmlPasos;
-            resultadoBox.style.display = 'block';
-        });
+        function resolver() {
+            try {
+                let m = [];
+                let columnas = sistemaActual + 1;
+
+                if(sistemaActual === 3) {
+                    m = [
+                        [new Frac(document.getElementById('a11').value), new Frac(document.getElementById('a12').value), new Frac(document.getElementById('a13').value), new Frac(document.getElementById('b1').value)],
+                        [new Frac(document.getElementById('a21').value), new Frac(document.getElementById('a22').value), new Frac(document.getElementById('a23').value), new Frac(document.getElementById('b2').value)],
+                        [new Frac(document.getElementById('a31').value), new Frac(document.getElementById('a32').value), new Frac(document.getElementById('a33').value), new Frac(document.getElementById('b3').value)]
+                    ];
+                } else {
+                    m = [
+                        [new Frac(document.getElementById('a11').value), new Frac(document.getElementById('a12').value), new Frac(document.getElementById('b1').value)],
+                        [new Frac(document.getElementById('a21').value), new Frac(document.getElementById('a22').value), new Frac(document.getElementById('b2').value)]
+                    ];
+                }
+                
+                let proceso = document.getElementById('proceso');
+                let resultado = document.getElementById('resultado');
+                proceso.innerHTML = printM(m, "Inicio");
+                resultado.innerHTML = "";
+                
+                for(let i = 0; i < sistemaActual; i++) {
+                    let maxR = i;
+                    for(let k = i+1; k < sistemaActual; k++) {
+                        if(Math.abs(m[k][i].val()) > Math.abs(m[i][i].val())) maxR = k;
+                    }
+                    if(maxR !== i) {
+                        [m[i], m[maxR]] = [m[maxR], m[i]];
+                        proceso.innerHTML += printM(m, `R${i+1}↔️R${maxR+1}`);
+                    }
+                    
+                    if(m[i][i].esCero()) {
+                        resultado.innerHTML = `<div class="error">Sin solución única</div>`;
+                        return;
+                    }
+                    
+                    let p = m[i][i];
+                    for(let j = 0; j < columnas; j++) m[i][j] = m[i][j].div(p);
+                    proceso.innerHTML += printM(m, `R${i+1}/${p.toString()}`);
+                    
+                    for(let k = 0; k < sistemaActual; k++) {
+                        if(k !== i && !m[k][i].esCero()) {
+                            let fac = m[k][i];
+                            for(let j = 0; j < columnas; j++) m[k][j] = m[k][j].resta(fac.mult(m[i][j]));
+                            proceso.innerHTML += printM(m, `R${k+1}-${fac.toString()}R${i+1}`);
+                        }
+                    }
+                }
+                
+                if(sistemaActual === 3) {
+                    resultado.innerHTML = `<div class="resultado">x = ${m[0][3].toString()}, &nbsp; y = ${m[1][3].toString()}, &nbsp; z = ${m[2][3].toString()}</div>`;
+                } else {
+                    resultado.innerHTML = `<div class="resultado">x = ${m[0][2].toString()}, &nbsp; y = ${m[1][2].toString()}</div>`;
+                }
+            } catch(e) {
+                document.getElementById('resultado').innerHTML = `<div class="error">Error: ${e.message}</div>`;
+            }
+        }
+        
+        function limpiar() {
+            document.querySelectorAll('input').forEach(i => i.value = '');
+            document.getElementById('proceso').innerHTML = '';
+            document.getElementById('resultado').innerHTML = '';
+        }
+        
+        window.onload = resolver;
     </script>
 </body>
 </html>
